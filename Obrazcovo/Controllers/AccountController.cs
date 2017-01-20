@@ -10,7 +10,7 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Obrazcovo.Models;
 using System.Drawing.Imaging;
-
+using reCAPTCHA.MVC;
 
 namespace Obrazcovo.Controllers
 {
@@ -136,22 +136,6 @@ namespace Obrazcovo.Controllers
             }
         }
 
-        public ActionResult Captcha11()
-        {
-            string code = new Random(DateTime.Now.Millisecond).Next(1111, 9999).ToString();
-            Session["code"] = code;
-            CaptchaImage captcha = new CaptchaImage(code, 110, 50);
-
-            this.Response.Clear();
-            this.Response.ContentType = "image/jpeg";
-
-            captcha.Image.Save(this.Response.OutputStream, ImageFormat.Jpeg);
-
-            captcha.Dispose();
-            return null;
-        }
-
-
 
         //
         // GET: /Account/Register
@@ -166,35 +150,29 @@ namespace Obrazcovo.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register(RegisterViewModel model)
+        [CaptchaValidator]
+        public async Task<ActionResult> Register(RegisterViewModel model, bool captchaValid)
         {
             if (ModelState.IsValid)
             {
-                if (model.Captcha != (string)Session["code"])
-                {
-                    ModelState.AddModelError("Captcha", "Текст с картинки введен неверно");
-                }
-                if (ModelState.IsValid)
-                {
-                    // действия по регистрации пользователя  
 
-                    var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                    var result = await UserManager.CreateAsync(user, model.Password);
-                    if (result.Succeeded)
-                    {
-                        await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
+                // действия по регистрации пользователя  
+
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var result = await UserManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     
-                        // Дополнительные сведения о том, как включить подтверждение учетной записи и сброс пароля, см. по адресу: http://go.microsoft.com/fwlink/?LinkID=320771
-                        // Отправка сообщения электронной почты с этой ссылкой
-                        // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                        // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                        // await UserManager.SendEmailAsync(user.Id, "Подтверждение учетной записи", "Подтвердите вашу учетную запись, щелкнув <a href=\"" + callbackUrl + "\">здесь</a>");
+                    // Дополнительные сведения о том, как включить подтверждение учетной записи и сброс пароля, см. по адресу: http://go.microsoft.com/fwlink/?LinkID=320771
+                    // Отправка сообщения электронной почты с этой ссылкой
+                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                    // await UserManager.SendEmailAsync(user.Id, "Подтверждение учетной записи", "Подтвердите вашу учетную запись, щелкнув <a href=\"" + callbackUrl + "\">здесь</a>");
 
-                        return RedirectToAction("Index", "Home");
-                    }
-                    AddErrors(result);
-
+                    return RedirectToAction("Index", "Home");
                 }
+                AddErrors(result);
 
             }
 
