@@ -79,6 +79,10 @@ namespace Obrazcovo.Models
         [Display(Name = "Подтверждение пароля")]
         [Compare("Password", ErrorMessage = "Пароль и его подтверждение не совпадают.")]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        [Display(Name = "Введите число с картинки")]
+        public string Captcha { get; set; }
     }
 
     public class ResetPasswordViewModel
