@@ -25,6 +25,9 @@ namespace Obrazcovo.Models
         {
         }
 
+        public virtual DbSet<Models.Thread> Threads { get; set; }
+        public virtual DbSet<Models.Message> Messages { get; set; }
+
         public static ApplicationDbContext Create()
         {
             return new ApplicationDbContext();
